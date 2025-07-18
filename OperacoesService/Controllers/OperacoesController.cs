@@ -33,6 +33,9 @@ public class OperacoesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] Operacao operacao)
     {
+        // Calcular automaticamente o tempo gasto
+        operacao.TempoGasto = operacao.HoraFim - operacao.HoraInicio;
+        
         _context.Operacoes.Add(operacao);
         await _context.SaveChangesAsync();
         return CreatedAtAction(nameof(Get), new { id = operacao.Id }, operacao);

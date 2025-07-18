@@ -116,15 +116,26 @@ export default function App() {
       return tempoGasto;
     }
     
-    // Se for um objeto com propriedades de tempo
+    // Se for um objeto TimeSpan do C# (formato: { days, hours, minutes, seconds, milliseconds })
     if (typeof tempoGasto === 'object') {
-      const horas = tempoGasto.hours || 0;
+      const dias = tempoGasto.days || 0;
+      const horas = (tempoGasto.hours || 0) + (dias * 24); // Converter dias em horas
       const minutos = tempoGasto.minutes || 0;
       const segundos = tempoGasto.seconds || 0;
       return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
     }
     
     return tempoGasto.toString();
+  };
+
+  // Função para exibir tempo gasto (usa o backend ou calcula localmente)
+  const exibirTempoGasto = (operacao) => {
+    // Se o backend retornou tempoGasto, use-o
+    if (operacao.tempoGasto) {
+      return formatarTempo(operacao.tempoGasto);
+    }
+    // Caso contrário, calcule localmente
+    return calcularTempoGasto(operacao.horaInicio, operacao.horaFim);
   };
 
   // Função para calcular o tempo gasto entre horaInicio e horaFim
@@ -189,7 +200,7 @@ export default function App() {
               <p><strong>Descrição:</strong> {searchResult.descricao}</p>
               <p><strong>Início:</strong> {new Date(searchResult.horaInicio).toLocaleString('pt-BR')}</p>
               <p><strong>Fim:</strong> {new Date(searchResult.horaFim).toLocaleString('pt-BR')}</p>
-              <p><strong>Tempo Gasto:</strong> {calcularTempoGasto(searchResult.horaInicio, searchResult.horaFim)}</p>
+              <p><strong>Tempo Gasto:</strong> {exibirTempoGasto(searchResult)}</p>
             </div>
           </div>
         )}
@@ -258,7 +269,7 @@ export default function App() {
                 </div>
                 <div className="operacao-details">
                   <span>📅 {new Date(op.horaInicio).toLocaleString('pt-BR')} até {new Date(op.horaFim).toLocaleString('pt-BR')}</span>
-                  <span>⏱️ Tempo gasto: {calcularTempoGasto(op.horaInicio, op.horaFim)}</span>
+                  <span>⏱️ Tempo gasto: {exibirTempoGasto(op)}</span>
                 </div>
               </li>
             ))}
