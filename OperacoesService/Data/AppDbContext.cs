@@ -1,8 +1,13 @@
 using Microsoft.EntityFrameworkCore;
+using OperacoesService.Models;
 
-public class AppDbContext : DbContext
+namespace OperacoesService.Data
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+    public class AppDbContext : DbContext
+    {
+        public AppDbContext(DbContextOptions<AppDbContext> options)
+            : base(options) { }
 
-    public DbSet<Operacao> Operacoes { get; set; }
+        public DbSet<Operacao> Operacoes { get; set; } = null!;
+    }
 }
