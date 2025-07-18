@@ -11,10 +11,20 @@ export default function App() {
   const [error, setError] = useState("");
   const [searchId, setSearchId] = useState("");
   const [searchResult, setSearchResult] = useState(null);
+  const [connectionStatus, setConnectionStatus] = useState("checking");
 
   useEffect(() => {
+    testarConexao();
     carregarOperacoes();
   }, []);
+
+  const testarConexao = async () => {
+    const result = await operacoesService.testConnection();
+    setConnectionStatus(result.success ? "connected" : "disconnected");
+    if (!result.success) {
+      setError(`Problema de conectividade: ${result.message}`);
+    }
+  };
 
   const carregarOperacoes = async () => {
     setLoading(true);
@@ -106,9 +116,10 @@ export default function App() {
       return tempoGasto;
     }
     
-    // Se for um objeto com propriedades de tempo
+    // Se for um objeto TimeSpan do C# (formato: { days, hours, minutes, seconds, milliseconds })
     if (typeof tempoGasto === 'object') {
-      const horas = tempoGasto.hours || 0;
+      const dias = tempoGasto.days || 0;
+      const horas = (tempoGasto.hours || 0) + (dias * 24); // Converter dias em horas
       const minutos = tempoGasto.minutes || 0;
       const segundos = tempoGasto.seconds || 0;
       return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
@@ -117,9 +128,46 @@ export default function App() {
     return tempoGasto.toString();
   };
 
+  // Função para exibir tempo gasto (usa o backend ou calcula localmente)
+  const exibirTempoGasto = (operacao) => {
+    // Se o backend retornou tempoGasto, use-o
+    if (operacao.tempoGasto) {
+      return formatarTempo(operacao.tempoGasto);
+    }
+    // Caso contrário, calcule localmente
+    return calcularTempoGasto(operacao.horaInicio, operacao.horaFim);
+  };
+
+  // Função para calcular o tempo gasto entre horaInicio e horaFim
+  const calcularTempoGasto = (inicio, fim) => {
+    if (!inicio || !fim) return "N/A";
+    const start = new Date(inicio);
+    const end = new Date(fim);
+    const diffMs = end - start;
+    if (diffMs < 0) return "N/A";
+    const horas = Math.floor(diffMs / (1000 * 60 * 60));
+    const minutos = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    const segundos = Math.floor((diffMs % (1000 * 60)) / 1000);
+    return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+  };
+
   return (
     <div className="container">
       <h1>Sistema de Operações</h1>
+      
+      {/* Status da conexão */}
+      <div className={`connection-status ${connectionStatus}`}>
+        {connectionStatus === "checking" && "🔄 Verificando conexão..."}
+        {connectionStatus === "connected" && "🟢 API conectada"}
+        {connectionStatus === "disconnected" && "🔴 API desconectada"}
+        <button 
+          onClick={testarConexao} 
+          className="test-connection-btn"
+          disabled={loading}
+        >
+          Testar Conexão
+        </button>
+      </div>
       
       {error && <div className="error-message">{error}</div>}
       {loading && <div className="loading">Carregando...</div>}
@@ -152,7 +200,7 @@ export default function App() {
               <p><strong>Descrição:</strong> {searchResult.descricao}</p>
               <p><strong>Início:</strong> {new Date(searchResult.horaInicio).toLocaleString('pt-BR')}</p>
               <p><strong>Fim:</strong> {new Date(searchResult.horaFim).toLocaleString('pt-BR')}</p>
-              <p><strong>Tempo Gasto:</strong> {formatarTempo(searchResult.tempoGasto)}</p>
+              <p><strong>Tempo Gasto:</strong> {exibirTempoGasto(searchResult)}</p>
             </div>
           </div>
         )}
@@ -221,7 +269,7 @@ export default function App() {
                 </div>
                 <div className="operacao-details">
                   <span>📅 {new Date(op.horaInicio).toLocaleString('pt-BR')} até {new Date(op.horaFim).toLocaleString('pt-BR')}</span>
-                  <span>⏱️ Tempo gasto: {formatarTempo(op.tempoGasto)}</span>
+                  <span>⏱️ Tempo gasto: {exibirTempoGasto(op)}</span>
                 </div>
               </li>
             ))}
