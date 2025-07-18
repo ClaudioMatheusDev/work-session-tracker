@@ -256,6 +256,142 @@ button:disabled {
   margin: 0;
 }
 
+/* Operações agrupadas por dia */
+.operacoes-por-dia {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.dia-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.dia-header {
+  background-color: #f8f9fa;
+  padding: 15px 20px;
+  border-bottom: 2px solid #e9ecef;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.data-titulo {
+  margin: 0;
+  color: #333;
+  font-size: 1.2em;
+  font-weight: 600;
+}
+
+.tempo-total-dia {
+  background-color: #007bff;
+  color: white;
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+.operacoes-do-dia {
+  padding: 0;
+}
+
+.operacao-linha {
+  display: grid;
+  grid-template-columns: 120px 1fr 80px;
+  gap: 15px;
+  padding: 12px 20px;
+  border-bottom: 1px solid #f1f3f4;
+  align-items: center;
+  transition: background-color 0.2s ease;
+}
+
+.operacao-linha:hover {
+  background-color: #f8f9fa;
+}
+
+.operacao-linha:last-child {
+  border-bottom: none;
+}
+
+.horario-operacao {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+  color: #495057;
+}
+
+.hora-inicio, .hora-fim {
+  font-weight: 600;
+}
+
+.separador {
+  color: #6c757d;
+  font-weight: bold;
+}
+
+.descricao-operacao {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nome-operacao {
+  font-weight: 500;
+  color: #333;
+}
+
+.id-operacao {
+  font-size: 0.8em;
+  color: #6c757d;
+}
+
+.tempo-operacao {
+  text-align: right;
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: #28a745;
+  font-size: 0.9em;
+}
+
+/* Responsividade para dispositivos móveis */
+@media (max-width: 768px) {
+  .operacao-linha {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 15px;
+  }
+  
+  .horario-operacao {
+    justify-content: space-between;
+    background-color: #f8f9fa;
+    padding: 8px 12px;
+    border-radius: 6px;
+  }
+  
+  .tempo-operacao {
+    text-align: center;
+    background-color: #e9ecef;
+    padding: 8px;
+    border-radius: 6px;
+  }
+  
+  .dia-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+  
+  .tempo-total-dia {
+    text-align: center;
+  }
+}
+
 .no-data {
   text-align: center;
   color: #666;

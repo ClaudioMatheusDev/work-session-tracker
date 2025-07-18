@@ -151,6 +151,42 @@ export default function App() {
     return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
   };
 
+  // Função para agrupar operações por data
+  const agruparPorData = (operacoes) => {
+    const grupos = {};
+    operacoes.forEach(op => {
+      const data = new Date(op.horaInicio).toLocaleDateString('pt-BR');
+      if (!grupos[data]) {
+        grupos[data] = [];
+      }
+      grupos[data].push(op);
+    });
+    
+    // Ordenar as datas (mais recentes primeiro)
+    const datasOrdenadas = Object.keys(grupos).sort((a, b) => {
+      return new Date(b.split('/').reverse().join('-')) - new Date(a.split('/').reverse().join('-'));
+    });
+    
+    return datasOrdenadas.map(data => ({
+      data,
+      operacoes: grupos[data].sort((a, b) => new Date(a.horaInicio) - new Date(b.horaInicio))
+    }));
+  };
+
+  // Função para calcular tempo total do dia
+  const calcularTempoTotalDia = (operacoesDoDia) => {
+    let totalMs = 0;
+    operacoesDoDia.forEach(op => {
+      const inicio = new Date(op.horaInicio);
+      const fim = new Date(op.horaFim);
+      totalMs += (fim - inicio);
+    });
+    
+    const horas = Math.floor(totalMs / (1000 * 60 * 60));
+    const minutos = Math.floor((totalMs % (1000 * 60 * 60)) / (1000 * 60));
+    return `${horas}h ${minutos}min`;
+  };
+
   return (
     <div className="container">
       <h1>Sistema de Operações</h1>
@@ -261,19 +297,49 @@ export default function App() {
         {operacoes.length === 0 ? (
           <p className="no-data">Nenhuma operação encontrada</p>
         ) : (
-          <ul className="operacoes-list">
-            {operacoes.map((op) => (
-              <li key={op.id} className="operacao-item">
-                <div className="operacao-header">
-                  <strong>#{op.id} - {op.descricao}</strong>
+          <div className="operacoes-por-dia">
+            {agruparPorData(operacoes).map(({ data, operacoes: operacoesDoDia }) => (
+              <div key={data} className="dia-container">
+                <div className="dia-header">
+                  <h3 className="data-titulo">{data}</h3>
+                  <span className="tempo-total-dia">
+                    Total: {calcularTempoTotalDia(operacoesDoDia)}
+                  </span>
                 </div>
-                <div className="operacao-details">
-                  <span>📅 {new Date(op.horaInicio).toLocaleString('pt-BR')} até {new Date(op.horaFim).toLocaleString('pt-BR')}</span>
-                  <span>⏱️ Tempo gasto: {exibirTempoGasto(op)}</span>
+                
+                <div className="operacoes-do-dia">
+                  {operacoesDoDia.map((op) => (
+                    <div key={op.id} className="operacao-linha">
+                      <div className="horario-operacao">
+                        <span className="hora-inicio">
+                          {new Date(op.horaInicio).toLocaleTimeString('pt-BR', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })}
+                        </span>
+                        <span className="separador">→</span>
+                        <span className="hora-fim">
+                          {new Date(op.horaFim).toLocaleTimeString('pt-BR', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })}
+                        </span>
+                      </div>
+                      
+                      <div className="descricao-operacao">
+                        <span className="nome-operacao">{op.descricao}</span>
+                        <span className="id-operacao">#{op.id}</span>
+                      </div>
+                      
+                      <div className="tempo-operacao">
+                        {exibirTempoGasto(op)}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </div>
     </div>
