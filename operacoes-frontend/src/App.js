@@ -127,6 +127,19 @@ export default function App() {
     return tempoGasto.toString();
   };
 
+  // Função para calcular o tempo gasto entre horaInicio e horaFim
+  const calcularTempoGasto = (inicio, fim) => {
+    if (!inicio || !fim) return "N/A";
+    const start = new Date(inicio);
+    const end = new Date(fim);
+    const diffMs = end - start;
+    if (diffMs < 0) return "N/A";
+    const horas = Math.floor(diffMs / (1000 * 60 * 60));
+    const minutos = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    const segundos = Math.floor((diffMs % (1000 * 60)) / 1000);
+    return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+  };
+
   return (
     <div className="container">
       <h1>Sistema de Operações</h1>
@@ -176,7 +189,7 @@ export default function App() {
               <p><strong>Descrição:</strong> {searchResult.descricao}</p>
               <p><strong>Início:</strong> {new Date(searchResult.horaInicio).toLocaleString('pt-BR')}</p>
               <p><strong>Fim:</strong> {new Date(searchResult.horaFim).toLocaleString('pt-BR')}</p>
-              <p><strong>Tempo Gasto:</strong> {formatarTempo(searchResult.tempoGasto)}</p>
+              <p><strong>Tempo Gasto:</strong> {calcularTempoGasto(searchResult.horaInicio, searchResult.horaFim)}</p>
             </div>
           </div>
         )}
@@ -245,7 +258,7 @@ export default function App() {
                 </div>
                 <div className="operacao-details">
                   <span>📅 {new Date(op.horaInicio).toLocaleString('pt-BR')} até {new Date(op.horaFim).toLocaleString('pt-BR')}</span>
-                  <span>⏱️ Tempo gasto: {formatarTempo(op.tempoGasto)}</span>
+                  <span>⏱️ Tempo gasto: {calcularTempoGasto(op.horaInicio, op.horaFim)}</span>
                 </div>
               </li>
             ))}
