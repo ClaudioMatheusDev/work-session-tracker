@@ -11,10 +11,20 @@ export default function App() {
   const [error, setError] = useState("");
   const [searchId, setSearchId] = useState("");
   const [searchResult, setSearchResult] = useState(null);
+  const [connectionStatus, setConnectionStatus] = useState("checking");
 
   useEffect(() => {
+    testarConexao();
     carregarOperacoes();
   }, []);
+
+  const testarConexao = async () => {
+    const result = await operacoesService.testConnection();
+    setConnectionStatus(result.success ? "connected" : "disconnected");
+    if (!result.success) {
+      setError(`Problema de conectividade: ${result.message}`);
+    }
+  };
 
   const carregarOperacoes = async () => {
     setLoading(true);
@@ -120,6 +130,20 @@ export default function App() {
   return (
     <div className="container">
       <h1>Sistema de Operações</h1>
+      
+      {/* Status da conexão */}
+      <div className={`connection-status ${connectionStatus}`}>
+        {connectionStatus === "checking" && "🔄 Verificando conexão..."}
+        {connectionStatus === "connected" && "🟢 API conectada"}
+        {connectionStatus === "disconnected" && "🔴 API desconectada"}
+        <button 
+          onClick={testarConexao} 
+          className="test-connection-btn"
+          disabled={loading}
+        >
+          Testar Conexão
+        </button>
+      </div>
       
       {error && <div className="error-message">{error}</div>}
       {loading && <div className="loading">Carregando...</div>}
