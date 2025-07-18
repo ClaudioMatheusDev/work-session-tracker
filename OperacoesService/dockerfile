@@ -4,8 +4,13 @@ EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
+
+COPY *.sln .
+COPY OperacoesService/*.csproj ./OperacoesService/
+RUN dotnet restore OperacoesService/OperacoesService.csproj
+
 COPY . .
-RUN dotnet restore
+WORKDIR /src/OperacoesService
 RUN dotnet publish -c Release -o /app/publish
 
 FROM base AS final
