@@ -12,9 +12,9 @@ Este projeto é um **Work Session Tracker**: uma aplicação para registrar, aco
 
 ## Tecnologias Utilizadas
 
-- **Linguagens:** (adicione aqui as linguagens usadas, ex: JavaScript, Python)
-- **Frameworks/Bibliotecas:** (adicione aqui frameworks usados, ex: React, Express)
-- **Banco de Dados:** (adicione aqui, se houver)
+- **Linguagens:** ASP.NET, JAVASCRIPT
+- **Frameworks/Bibliotecas:** REACT
+- **Banco de Dados:** PostgreSQL
 
 ## Como Usar
 
