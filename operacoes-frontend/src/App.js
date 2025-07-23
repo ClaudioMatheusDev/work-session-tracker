@@ -3,6 +3,7 @@ import { operacoesService } from "./services/api";
 import "./index.css";
 
 export default function App() {
+  // Build timestamp: 2025-01-23 15:30
   const [operacoes, setOperacoes] = useState([]);
   const [descricao, setDescricao] = useState("");
   const [horaInicio, setHoraInicio] = useState("");
