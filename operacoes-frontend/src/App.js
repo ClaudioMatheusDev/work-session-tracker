@@ -17,6 +17,35 @@ export default function App() {
   const [editDescricao, setEditDescricao] = useState("");
   const [editHoraInicio, setEditHoraInicio] = useState("");
   const [editHoraFim, setEditHoraFim] = useState("");
+  const [demoMode, setDemoMode] = useState(false);
+
+  // Dados de demonstração para quando a API não estiver disponível
+  const dadosDemo = [
+    {
+      id: 1,
+      descricao: "Análise de requisitos do projeto",
+      horaInicio: "2025-01-23T09:00:00.000Z",
+      horaFim: "2025-01-23T10:30:00.000Z",
+    },
+    {
+      id: 2,
+      descricao: "Desenvolvimento da funcionalidade de login",
+      horaInicio: "2025-01-23T10:45:00.000Z",
+      horaFim: "2025-01-23T12:15:00.000Z",
+    },
+    {
+      id: 3,
+      descricao: "Testes unitários e correções",
+      horaInicio: "2025-01-23T14:00:00.000Z",
+      horaFim: "2025-01-23T16:30:00.000Z",
+    },
+    {
+      id: 4,
+      descricao: "Reunião de alinhamento com a equipe",
+      horaInicio: "2025-01-22T15:00:00.000Z",
+      horaFim: "2025-01-22T16:00:00.000Z",
+    }
+  ];
 
   useEffect(() => {
     testarConexao();
@@ -28,6 +57,11 @@ export default function App() {
     setConnectionStatus(result.success ? "connected" : "disconnected");
     if (!result.success) {
       setError(`Problema de conectividade: ${result.message}`);
+      // Ativar modo demo quando a API não estiver disponível
+      setDemoMode(true);
+      setOperacoes(dadosDemo);
+    } else {
+      setDemoMode(false);
     }
   };
 
@@ -35,10 +69,27 @@ export default function App() {
     setLoading(true);
     setError("");
     try {
-      const data = await operacoesService.getAll();
-      setOperacoes(data);
+      if (demoMode) {
+        // Simular delay de rede
+        await new Promise(resolve => setTimeout(resolve, 500));
+        setOperacoes(dadosDemo);
+      } else {
+        const data = await operacoesService.getAll();
+        if (data && data.length > 0) {
+          setOperacoes(data);
+        } else {
+          // Se API conectou mas não tem dados, usar dados demo para demonstração
+          console.log("API conectada mas sem dados, usando dados demo");
+          setDemoMode(true);
+          setOperacoes(dadosDemo);
+        }
+      }
     } catch (error) {
       setError(error.message);
+      // Em caso de erro, ativar modo demo
+      console.log("Erro ao carregar dados, ativando modo demo");
+      setDemoMode(true);
+      setOperacoes(dadosDemo);
     } finally {
       setLoading(false);
     }
@@ -80,8 +131,19 @@ export default function App() {
 
     setLoading(true);
     try {
-      const response = await operacoesService.create(novaOperacao);
-      setOperacoes([...operacoes, response]);
+      if (demoMode) {
+        // Simular delay de rede no modo demo
+        await new Promise(resolve => setTimeout(resolve, 800));
+        const operacaoComId = {
+          ...novaOperacao,
+          id: Math.max(...operacoes.map(op => op.id), 0) + 1
+        };
+        setOperacoes([...operacoes, operacaoComId]);
+      } else {
+        const response = await operacoesService.create(novaOperacao);
+        setOperacoes([...operacoes, response]);
+      }
+      
       setDescricao("");
       setHoraInicio("");
       setHoraFim("");
@@ -104,8 +166,18 @@ export default function App() {
     setSearchResult(null);
     
     try {
-      const data = await operacoesService.getById(searchId);
-      setSearchResult(data);
+      if (demoMode) {
+        // Simular delay de rede no modo demo
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const operacaoEncontrada = operacoes.find(op => op.id === parseInt(searchId));
+        if (!operacaoEncontrada) {
+          throw new Error(`Operação com ID ${searchId} não encontrada`);
+        }
+        setSearchResult(operacaoEncontrada);
+      } else {
+        const data = await operacoesService.getById(searchId);
+        setSearchResult(data);
+      }
     } catch (error) {
       setError(error.message);
     } finally {
@@ -252,12 +324,20 @@ export default function App() {
 
     setLoading(true);
     try {
-      const response = await operacoesService.update(editandoId, operacaoAtualizada);
-      
-      // Atualizar a lista local
-      setOperacoes(operacoes.map(op => 
-        op.id === editandoId ? response : op
-      ));
+      if (demoMode) {
+        // Simular delay de rede no modo demo
+        await new Promise(resolve => setTimeout(resolve, 800));
+        // Atualizar a lista local diretamente no modo demo
+        setOperacoes(operacoes.map(op => 
+          op.id === editandoId ? { ...op, ...operacaoAtualizada } : op
+        ));
+      } else {
+        const response = await operacoesService.update(editandoId, operacaoAtualizada);
+        // Atualizar a lista local
+        setOperacoes(operacoes.map(op => 
+          op.id === editandoId ? response : op
+        ));
+      }
       
       cancelarEdicao();
     } catch (error) {
@@ -279,10 +359,16 @@ export default function App() {
     setError("");
     
     try {
-      await operacoesService.delete(id);
-      
-      // Remover da lista local
-      setOperacoes(operacoes.filter(op => op.id !== id));
+      if (demoMode) {
+        // Simular delay de rede no modo demo
+        await new Promise(resolve => setTimeout(resolve, 500));
+        // Remover da lista local diretamente no modo demo
+        setOperacoes(operacoes.filter(op => op.id !== id));
+      } else {
+        await operacoesService.delete(id);
+        // Remover da lista local
+        setOperacoes(operacoes.filter(op => op.id !== id));
+      }
       
       // Se estava editando esta operação, cancelar
       if (editandoId === id) {
@@ -303,7 +389,7 @@ export default function App() {
       {/* Status da conexão */}
       <div className={`connection-status ${connectionStatus}`}>
         {connectionStatus === "checking" && "🔄 Verificando conexão..."}
-        {connectionStatus === "connected" && "🟢 API conectada"}
+        {connectionStatus === "connected" && (demoMode ? "🟡 API conectada - Modo demonstração" : "🟢 API conectada")}
         {connectionStatus === "disconnected" && "🔴 API desconectada"}
         <button 
           onClick={testarConexao} 
