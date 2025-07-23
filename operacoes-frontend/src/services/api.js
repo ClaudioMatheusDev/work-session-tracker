@@ -119,6 +119,67 @@ export const operacoesService = {
     }
   },
 
+  // Atualizar operação existente
+  update: async (id, operacao) => {
+    try {
+      console.log('✏️ Atualizando operação:', id, operacao);
+      
+      const operacaoFormatada = {
+        id: parseInt(id),
+        descricao: operacao.descricao.trim(),
+        horaInicio: new Date(operacao.horaInicio).toISOString(),
+        horaFim: new Date(operacao.horaFim).toISOString(),
+      };
+      
+      const response = await api.put(`/operacoes/${id}`, operacaoFormatada);
+      console.log('✅ Operação atualizada:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('❌ Erro ao atualizar operação:', error);
+      
+      if (error.code === 'NETWORK_ERROR' || error.message === 'Network Error') {
+        throw new Error('Erro de conectividade: Não foi possível conectar com o servidor.');
+      }
+      
+      if (error.response?.status === 404) {
+        throw new Error('Operação não encontrada para atualização');
+      }
+      
+      if (error.response?.status === 400) {
+        throw new Error('Dados inválidos para atualização');
+      }
+      
+      if (error.response?.status === 409) {
+        throw new Error('Conflito: A operação foi modificada por outro usuário');
+      }
+      
+      throw new Error(`Erro ao atualizar operação: ${error.response?.data?.title || error.response?.data?.message || error.message}`);
+    }
+  },
+
+  // Excluir operação
+  delete: async (id) => {
+    try {
+      console.log('🗑️ Excluindo operação:', id);
+      
+      await api.delete(`/operacoes/${id}`);
+      console.log('✅ Operação excluída com sucesso');
+      return true;
+    } catch (error) {
+      console.error('❌ Erro ao excluir operação:', error);
+      
+      if (error.code === 'NETWORK_ERROR' || error.message === 'Network Error') {
+        throw new Error('Erro de conectividade: Não foi possível conectar com o servidor.');
+      }
+      
+      if (error.response?.status === 404) {
+        throw new Error('Operação não encontrada para exclusão');
+      }
+      
+      throw new Error(`Erro ao excluir operação: ${error.response?.data?.title || error.response?.data?.message || error.message}`);
+    }
+  },
+
   // Método para testar conectividade
   testConnection: async () => {
     try {

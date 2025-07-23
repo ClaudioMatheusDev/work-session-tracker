@@ -12,6 +12,10 @@ export default function App() {
   const [searchId, setSearchId] = useState("");
   const [searchResult, setSearchResult] = useState(null);
   const [connectionStatus, setConnectionStatus] = useState("checking");
+  const [editandoId, setEditandoId] = useState(null);
+  const [editDescricao, setEditDescricao] = useState("");
+  const [editHoraInicio, setEditHoraInicio] = useState("");
+  const [editHoraFim, setEditHoraFim] = useState("");
 
   useEffect(() => {
     testarConexao();
@@ -151,6 +155,146 @@ export default function App() {
     return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
   };
 
+  // Função para agrupar operações por data
+  const agruparPorData = (operacoes) => {
+    const grupos = {};
+    operacoes.forEach(op => {
+      const data = new Date(op.horaInicio).toLocaleDateString('pt-BR');
+      if (!grupos[data]) {
+        grupos[data] = [];
+      }
+      grupos[data].push(op);
+    });
+    
+    // Ordenar as datas (mais recentes primeiro)
+    const datasOrdenadas = Object.keys(grupos).sort((a, b) => {
+      return new Date(b.split('/').reverse().join('-')) - new Date(a.split('/').reverse().join('-'));
+    });
+    
+    return datasOrdenadas.map(data => ({
+      data,
+      operacoes: grupos[data].sort((a, b) => new Date(a.horaInicio) - new Date(b.horaInicio))
+    }));
+  };
+
+  // Função para calcular tempo total do dia
+  const calcularTempoTotalDia = (operacoesDoDia) => {
+    let totalMs = 0;
+    operacoesDoDia.forEach(op => {
+      const inicio = new Date(op.horaInicio);
+      const fim = new Date(op.horaFim);
+      totalMs += (fim - inicio);
+    });
+    
+    const horas = Math.floor(totalMs / (1000 * 60 * 60));
+    const minutos = Math.floor((totalMs % (1000 * 60 * 60)) / (1000 * 60));
+    return `${horas}h ${minutos}min`;
+  };
+
+  // Função para iniciar edição de uma operação
+  const iniciarEdicao = (operacao) => {
+    setEditandoId(operacao.id);
+    setEditDescricao(operacao.descricao);
+    
+    // Converter para formato datetime-local
+    const formatarDataParaInput = (dataISO) => {
+      const date = new Date(dataISO);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+    
+    setEditHoraInicio(formatarDataParaInput(operacao.horaInicio));
+    setEditHoraFim(formatarDataParaInput(operacao.horaFim));
+    setError("");
+  };
+
+  // Função para cancelar edição
+  const cancelarEdicao = () => {
+    setEditandoId(null);
+    setEditDescricao("");
+    setEditHoraInicio("");
+    setEditHoraFim("");
+    setError("");
+  };
+
+  // Função para salvar edição
+  const salvarEdicao = async () => {
+    setError("");
+
+    // Validações
+    if (!editDescricao.trim()) {
+      setError("Descrição é obrigatória");
+      return;
+    }
+    if (!editHoraInicio) {
+      setError("Hora de início é obrigatória");
+      return;
+    }
+    if (!editHoraFim) {
+      setError("Hora de fim é obrigatória");
+      return;
+    }
+    if (new Date(editHoraInicio) >= new Date(editHoraFim)) {
+      setError("Hora de fim deve ser posterior à hora de início");
+      return;
+    }
+
+    const operacaoAtualizada = {
+      descricao: editDescricao.trim(),
+      horaInicio: editHoraInicio,
+      horaFim: editHoraFim,
+    };
+
+    setLoading(true);
+    try {
+      const response = await operacoesService.update(editandoId, operacaoAtualizada);
+      
+      // Atualizar a lista local
+      setOperacoes(operacoes.map(op => 
+        op.id === editandoId ? response : op
+      ));
+      
+      cancelarEdicao();
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Função para excluir operação
+  const excluirOperacao = async (id, descricao) => {
+    const confirmacao = window.confirm(
+      `Tem certeza que deseja excluir a operação "${descricao}"?\n\nEsta ação não pode ser desfeita.`
+    );
+    
+    if (!confirmacao) return;
+
+    setLoading(true);
+    setError("");
+    
+    try {
+      await operacoesService.delete(id);
+      
+      // Remover da lista local
+      setOperacoes(operacoes.filter(op => op.id !== id));
+      
+      // Se estava editando esta operação, cancelar
+      if (editandoId === id) {
+        cancelarEdicao();
+      }
+      
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="container">
       <h1>Sistema de Operações</h1>
@@ -261,19 +405,120 @@ export default function App() {
         {operacoes.length === 0 ? (
           <p className="no-data">Nenhuma operação encontrada</p>
         ) : (
-          <ul className="operacoes-list">
-            {operacoes.map((op) => (
-              <li key={op.id} className="operacao-item">
-                <div className="operacao-header">
-                  <strong>#{op.id} - {op.descricao}</strong>
+          <div className="operacoes-por-dia">
+            {agruparPorData(operacoes).map(({ data, operacoes: operacoesDoDia }) => (
+              <div key={data} className="dia-container">
+                <div className="dia-header">
+                  <h3 className="data-titulo">{data}</h3>
+                  <span className="tempo-total-dia">
+                    Total: {calcularTempoTotalDia(operacoesDoDia)}
+                  </span>
                 </div>
-                <div className="operacao-details">
-                  <span>📅 {new Date(op.horaInicio).toLocaleString('pt-BR')} até {new Date(op.horaFim).toLocaleString('pt-BR')}</span>
-                  <span>⏱️ Tempo gasto: {exibirTempoGasto(op)}</span>
+                
+                <div className="operacoes-do-dia">
+                  {operacoesDoDia.map((op) => (
+                    <div key={op.id} className="operacao-linha">
+                      {editandoId === op.id ? (
+                        // Modo de edição
+                        <div className="operacao-editando">
+                          <div className="edit-form">
+                            <input
+                              type="text"
+                              value={editDescricao}
+                              onChange={(e) => setEditDescricao(e.target.value)}
+                              placeholder="Descrição"
+                              className="edit-input"
+                              disabled={loading}
+                            />
+                            <div className="horarios-edit">
+                              <input
+                                type="datetime-local"
+                                value={editHoraInicio}
+                                onChange={(e) => setEditHoraInicio(e.target.value)}
+                                className="edit-input-time"
+                                disabled={loading}
+                              />
+                              <span className="separador">→</span>
+                              <input
+                                type="datetime-local"
+                                value={editHoraFim}
+                                onChange={(e) => setEditHoraFim(e.target.value)}
+                                className="edit-input-time"
+                                disabled={loading}
+                              />
+                            </div>
+                          </div>
+                          <div className="edit-actions">
+                            <button 
+                              onClick={salvarEdicao}
+                              disabled={loading}
+                              className="btn-salvar"
+                            >
+                              {loading ? "Salvando..." : "✅ Salvar"}
+                            </button>
+                            <button 
+                              onClick={cancelarEdicao}
+                              disabled={loading}
+                              className="btn-cancelar"
+                            >
+                              ❌ Cancelar
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        // Modo de visualização
+                        <>
+                          <div className="horario-operacao">
+                            <span className="hora-inicio">
+                              {new Date(op.horaInicio).toLocaleTimeString('pt-BR', { 
+                                hour: '2-digit', 
+                                minute: '2-digit' 
+                              })}
+                            </span>
+                            <span className="separador">→</span>
+                            <span className="hora-fim">
+                              {new Date(op.horaFim).toLocaleTimeString('pt-BR', { 
+                                hour: '2-digit', 
+                                minute: '2-digit' 
+                              })}
+                            </span>
+                          </div>
+                          
+                          <div className="descricao-operacao">
+                            <span className="nome-operacao">{op.descricao}</span>
+                            <span className="id-operacao">#{op.id}</span>
+                          </div>
+                          
+                          <div className="tempo-operacao">
+                            {exibirTempoGasto(op)}
+                          </div>
+                          
+                          <div className="operacao-actions">
+                            <button 
+                              onClick={() => iniciarEdicao(op)}
+                              disabled={loading || editandoId !== null}
+                              className="btn-editar"
+                              title="Editar operação"
+                            >
+                              ✏️
+                            </button>
+                            <button 
+                              onClick={() => excluirOperacao(op.id, op.descricao)}
+                              disabled={loading || editandoId !== null}
+                              className="btn-excluir"
+                              title="Excluir operação"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </div>
     </div>
