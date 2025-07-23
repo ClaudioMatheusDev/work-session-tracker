@@ -40,4 +40,48 @@ public class OperacoesController : ControllerBase
         await _context.SaveChangesAsync();
         return CreatedAtAction(nameof(Get), new { id = operacao.Id }, operacao);
     }
+
+    // PUT api/operacoes/{id}
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Put(int id, [FromBody] Operacao operacao)
+    {
+        if (id != operacao.Id)
+            return BadRequest("ID da URL não confere com ID do objeto");
+
+        var operacaoExistente = await _context.Operacoes.FindAsync(id);
+        if (operacaoExistente == null)
+            return NotFound();
+
+        // Atualizar propriedades
+        operacaoExistente.Descricao = operacao.Descricao;
+        operacaoExistente.HoraInicio = operacao.HoraInicio;
+        operacaoExistente.HoraFim = operacao.HoraFim;
+        
+        // Recalcular tempo gasto
+        operacaoExistente.TempoGasto = operacao.HoraFim - operacao.HoraInicio;
+
+        try
+        {
+            await _context.SaveChangesAsync();
+            return Ok(operacaoExistente);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return Conflict("A operação foi modificada por outro usuário");
+        }
+    }
+
+    // DELETE api/operacoes/{id}
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var operacao = await _context.Operacoes.FindAsync(id);
+        if (operacao == null)
+            return NotFound();
+
+        _context.Operacoes.Remove(operacao);
+        await _context.SaveChangesAsync();
+        
+        return NoContent();
+    }
 }

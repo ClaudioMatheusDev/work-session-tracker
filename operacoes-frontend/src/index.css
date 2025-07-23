@@ -301,7 +301,7 @@ button:disabled {
 
 .operacao-linha {
   display: grid;
-  grid-template-columns: 120px 1fr 80px;
+  grid-template-columns: 120px 1fr 80px 80px;
   gap: 15px;
   padding: 12px 20px;
   border-bottom: 1px solid #f1f3f4;
@@ -381,6 +381,12 @@ button:disabled {
     border-radius: 6px;
   }
   
+  .operacao-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
+  
   .dia-header {
     flex-direction: column;
     gap: 10px;
@@ -389,6 +395,155 @@ button:disabled {
   
   .tempo-total-dia {
     text-align: center;
+  }
+}
+
+/* Ações das operações (editar/excluir) */
+.operacao-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.btn-editar, .btn-excluir {
+  padding: 6px 8px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  background: none;
+  border: 1px solid transparent;
+}
+
+.btn-editar {
+  color: #ffc107;
+  border-color: #ffc107;
+}
+
+.btn-editar:hover:not(:disabled) {
+  background-color: #ffc107;
+  color: white;
+  transform: scale(1.1);
+}
+
+.btn-excluir {
+  color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-excluir:hover:not(:disabled) {
+  background-color: #dc3545;
+  color: white;
+  transform: scale(1.1);
+}
+
+.btn-editar:disabled, .btn-excluir:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Modo de edição */
+.operacao-editando {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  grid-column: 1 / -1;
+  padding: 15px;
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+}
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.edit-input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.edit-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+.horarios-edit {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.edit-input-time {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  flex: 1;
+}
+
+.edit-input-time:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+.edit-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.btn-salvar {
+  background-color: #28a745;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.btn-salvar:hover:not(:disabled) {
+  background-color: #218838;
+}
+
+.btn-cancelar {
+  background-color: #6c757d;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.btn-cancelar:hover:not(:disabled) {
+  background-color: #5a6268;
+}
+
+/* Responsividade para modo de edição */
+@media (max-width: 768px) {
+  .horarios-edit {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .edit-actions {
+    justify-content: stretch;
+  }
+  
+  .btn-salvar, .btn-cancelar {
+    flex: 1;
   }
 }
 

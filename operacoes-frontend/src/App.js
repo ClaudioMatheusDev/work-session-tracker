@@ -12,6 +12,10 @@ export default function App() {
   const [searchId, setSearchId] = useState("");
   const [searchResult, setSearchResult] = useState(null);
   const [connectionStatus, setConnectionStatus] = useState("checking");
+  const [editandoId, setEditandoId] = useState(null);
+  const [editDescricao, setEditDescricao] = useState("");
+  const [editHoraInicio, setEditHoraInicio] = useState("");
+  const [editHoraFim, setEditHoraFim] = useState("");
 
   useEffect(() => {
     testarConexao();
@@ -187,6 +191,110 @@ export default function App() {
     return `${horas}h ${minutos}min`;
   };
 
+  // Função para iniciar edição de uma operação
+  const iniciarEdicao = (operacao) => {
+    setEditandoId(operacao.id);
+    setEditDescricao(operacao.descricao);
+    
+    // Converter para formato datetime-local
+    const formatarDataParaInput = (dataISO) => {
+      const date = new Date(dataISO);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+    
+    setEditHoraInicio(formatarDataParaInput(operacao.horaInicio));
+    setEditHoraFim(formatarDataParaInput(operacao.horaFim));
+    setError("");
+  };
+
+  // Função para cancelar edição
+  const cancelarEdicao = () => {
+    setEditandoId(null);
+    setEditDescricao("");
+    setEditHoraInicio("");
+    setEditHoraFim("");
+    setError("");
+  };
+
+  // Função para salvar edição
+  const salvarEdicao = async () => {
+    setError("");
+
+    // Validações
+    if (!editDescricao.trim()) {
+      setError("Descrição é obrigatória");
+      return;
+    }
+    if (!editHoraInicio) {
+      setError("Hora de início é obrigatória");
+      return;
+    }
+    if (!editHoraFim) {
+      setError("Hora de fim é obrigatória");
+      return;
+    }
+    if (new Date(editHoraInicio) >= new Date(editHoraFim)) {
+      setError("Hora de fim deve ser posterior à hora de início");
+      return;
+    }
+
+    const operacaoAtualizada = {
+      descricao: editDescricao.trim(),
+      horaInicio: editHoraInicio,
+      horaFim: editHoraFim,
+    };
+
+    setLoading(true);
+    try {
+      const response = await operacoesService.update(editandoId, operacaoAtualizada);
+      
+      // Atualizar a lista local
+      setOperacoes(operacoes.map(op => 
+        op.id === editandoId ? response : op
+      ));
+      
+      cancelarEdicao();
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Função para excluir operação
+  const excluirOperacao = async (id, descricao) => {
+    const confirmacao = window.confirm(
+      `Tem certeza que deseja excluir a operação "${descricao}"?\n\nEsta ação não pode ser desfeita.`
+    );
+    
+    if (!confirmacao) return;
+
+    setLoading(true);
+    setError("");
+    
+    try {
+      await operacoesService.delete(id);
+      
+      // Remover da lista local
+      setOperacoes(operacoes.filter(op => op.id !== id));
+      
+      // Se estava editando esta operação, cancelar
+      if (editandoId === id) {
+        cancelarEdicao();
+      }
+      
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="container">
       <h1>Sistema de Operações</h1>
@@ -310,30 +418,101 @@ export default function App() {
                 <div className="operacoes-do-dia">
                   {operacoesDoDia.map((op) => (
                     <div key={op.id} className="operacao-linha">
-                      <div className="horario-operacao">
-                        <span className="hora-inicio">
-                          {new Date(op.horaInicio).toLocaleTimeString('pt-BR', { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          })}
-                        </span>
-                        <span className="separador">→</span>
-                        <span className="hora-fim">
-                          {new Date(op.horaFim).toLocaleTimeString('pt-BR', { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          })}
-                        </span>
-                      </div>
-                      
-                      <div className="descricao-operacao">
-                        <span className="nome-operacao">{op.descricao}</span>
-                        <span className="id-operacao">#{op.id}</span>
-                      </div>
-                      
-                      <div className="tempo-operacao">
-                        {exibirTempoGasto(op)}
-                      </div>
+                      {editandoId === op.id ? (
+                        // Modo de edição
+                        <div className="operacao-editando">
+                          <div className="edit-form">
+                            <input
+                              type="text"
+                              value={editDescricao}
+                              onChange={(e) => setEditDescricao(e.target.value)}
+                              placeholder="Descrição"
+                              className="edit-input"
+                              disabled={loading}
+                            />
+                            <div className="horarios-edit">
+                              <input
+                                type="datetime-local"
+                                value={editHoraInicio}
+                                onChange={(e) => setEditHoraInicio(e.target.value)}
+                                className="edit-input-time"
+                                disabled={loading}
+                              />
+                              <span className="separador">→</span>
+                              <input
+                                type="datetime-local"
+                                value={editHoraFim}
+                                onChange={(e) => setEditHoraFim(e.target.value)}
+                                className="edit-input-time"
+                                disabled={loading}
+                              />
+                            </div>
+                          </div>
+                          <div className="edit-actions">
+                            <button 
+                              onClick={salvarEdicao}
+                              disabled={loading}
+                              className="btn-salvar"
+                            >
+                              {loading ? "Salvando..." : "✅ Salvar"}
+                            </button>
+                            <button 
+                              onClick={cancelarEdicao}
+                              disabled={loading}
+                              className="btn-cancelar"
+                            >
+                              ❌ Cancelar
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        // Modo de visualização
+                        <>
+                          <div className="horario-operacao">
+                            <span className="hora-inicio">
+                              {new Date(op.horaInicio).toLocaleTimeString('pt-BR', { 
+                                hour: '2-digit', 
+                                minute: '2-digit' 
+                              })}
+                            </span>
+                            <span className="separador">→</span>
+                            <span className="hora-fim">
+                              {new Date(op.horaFim).toLocaleTimeString('pt-BR', { 
+                                hour: '2-digit', 
+                                minute: '2-digit' 
+                              })}
+                            </span>
+                          </div>
+                          
+                          <div className="descricao-operacao">
+                            <span className="nome-operacao">{op.descricao}</span>
+                            <span className="id-operacao">#{op.id}</span>
+                          </div>
+                          
+                          <div className="tempo-operacao">
+                            {exibirTempoGasto(op)}
+                          </div>
+                          
+                          <div className="operacao-actions">
+                            <button 
+                              onClick={() => iniciarEdicao(op)}
+                              disabled={loading || editandoId !== null}
+                              className="btn-editar"
+                              title="Editar operação"
+                            >
+                              ✏️
+                            </button>
+                            <button 
+                              onClick={() => excluirOperacao(op.id, op.descricao)}
+                              disabled={loading || editandoId !== null}
+                              className="btn-excluir"
+                              title="Excluir operação"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </div>
                   ))}
                 </div>
