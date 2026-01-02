@@ -1,6 +1,59 @@
-# Getting Started with Create React App
+# Work Session Tracker - Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Sistema moderno de rastreamento de sessões de trabalho com React.
+
+## 📋 Estrutura do Projeto
+
+```
+src/
+├── components/
+│   ├── Session/          # Componentes de sessão
+│   │   ├── ConnectionStatus.jsx
+│   │   ├── SessionForm.jsx
+│   │   ├── SessionList.jsx
+│   │   ├── SessionCard.jsx
+│   │   └── SessionSearch.jsx
+│   └── UI/               # Componentes UI reutilizáveis
+│       ├── Button.jsx
+│       ├── Input.jsx
+│       ├── Card.jsx
+│       ├── Loading.jsx
+│       └── ErrorMessage.jsx
+├── hooks/                # Hooks customizados
+│   ├── useOperacoes.js
+│   └── useConnectionStatus.js
+├── services/             # Serviços de API
+│   └── api.js
+├── utils/                # Utilitários
+│   ├── formatters.js
+│   ├── validators.js
+│   └── groupers.js
+├── contexts/             # Context API
+│   └── OperacoesContext.jsx
+└── App.js                # Componente principal
+```
+
+## 🚀 Como Rodar
+
+### Pré-requisitos
+- Node.js 14+
+- npm ou yarn
+
+### Instalação
+
+```bash
+cd operacoes-frontend
+npm install
+```
+
+### Variáveis de Ambiente
+
+Crie um arquivo `.env` na raiz do projeto:
+
+```env
+REACT_APP_API_URL=https://work-session-tracker-production.up.railway.app/api
+REACT_APP_API_TIMEOUT=15000
+```
 
 ## Available Scripts
 
