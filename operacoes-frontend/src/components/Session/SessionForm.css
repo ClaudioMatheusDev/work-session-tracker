@@ -1,0 +1,25 @@
+.session-form-card {
+  margin-bottom: 2rem;
+}
+
+.session-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.datetime-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .datetime-inputs {
+    grid-template-columns: 1fr;
+  }
+}
+
+.submit-btn {
+  margin-top: 0.5rem;
+}

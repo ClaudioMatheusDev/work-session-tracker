@@ -2,8 +2,8 @@ import axios from 'axios';
 
 // Configuração base da API
 const api = axios.create({
-  baseURL: 'https://work-session-tracker-production.up.railway.app/api',
-  timeout: 15000,
+  baseURL: process.env.REACT_APP_API_URL || 'https://work-session-tracker-production.up.railway.app/api',
+  timeout: parseInt(process.env.REACT_APP_API_TIMEOUT) || 15000,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -53,7 +53,12 @@ export const operacoesService = {
   getAll: async () => {
     try {
       const response = await api.get('/operacoes');
-      return response.data;
+      // Se a resposta for paginada, retorna apenas o array de dados
+      if (response.data && response.data.data) {
+        return response.data.data;
+      }
+      // Se for um array direto, retorna como está
+      return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
       console.error('❌ Erro ao buscar operações:', error);
       if (error.code === 'NETWORK_ERROR' || error.message === 'Network Error') {
