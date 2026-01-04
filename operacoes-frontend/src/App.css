@@ -37,6 +37,20 @@ body {
 .app-subtitle {
   font-size: 1.125rem;
   opacity: 0.9;
+  margin-bottom: 1.5rem;
+}
+
+.app-nav {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.nav-btn {
+  font-size: 1rem;
+  padding: 0.75rem 1.5rem;
+  min-width: 150px;
 }
 
 .app-main {
