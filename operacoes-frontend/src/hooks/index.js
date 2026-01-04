@@ -4,3 +4,4 @@
 
 export { useOperacoes } from './useOperacoes';
 export { useConnectionStatus } from './useConnectionStatus';
+export { usePomodoro } from './usePomodoro';

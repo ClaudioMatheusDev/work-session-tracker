@@ -14,6 +14,58 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [2.1.0] - 2026-01-03
+
+### ✨ Adicionado
+
+#### Funcionalidade Pomodoro
+- **Timer Pomodoro Completo**:
+  - Timer visual circular com progresso animado
+  - Três modos: Trabalho (25min), Pausa Curta (5min), Pausa Longa (15min)
+  - Contadores de sessões e ciclos completos
+  - Notificações visuais e sonoras ao completar cada fase
+  
+- **Componentes Pomodoro**:
+  - `PomodoroTimer` - Timer principal com controles (iniciar, pausar, pular, resetar)
+  - `PomodoroSettings` - Configurações personalizáveis (tempos de trabalho, pausas)
+  - `PomodoroStats` - Estatísticas detalhadas (pomodoros totais, tempo de foco, ciclos)
+  - `PomodoroPage` - Página dedicada ao Pomodoro
+
+- **Hook Customizado**:
+  - `usePomodoro` - Lógica completa do timer com estados, controles e cálculos
+  - Notificações do navegador (Web Notifications API)
+  - Notificações sonoras (Web Audio API)
+  - Cálculo automático de progresso e estatísticas
+
+- **Navegação**:
+  - Sistema de navegação entre Operações e Pomodoro
+  - Botões de navegação no header
+  - Navegação por abas (Operações 📋 / Pomodoro 🍅)
+
+### 🔄 Modificado
+- **App.js**: Adicionado sistema de navegação por páginas
+- **App.css**: Estilos para navegação e responsividade
+- **Header**: Título e subtítulo atualizados para refletir as funcionalidades
+
+### 📚 Features do Pomodoro
+- ⏰ Timer visual com círculo de progresso animado
+- 🎯 Três modos automáticos (Trabalho/Pausa Curta/Pausa Longa)
+- 📊 Estatísticas em tempo real
+- 🔔 Notificações do navegador
+- 🔊 Alertas sonoros
+- ⚙️ Configurações personalizáveis
+- 📈 Contador de ciclos e progresso
+- 💡 Dicas da Técnica Pomodoro
+
+### 🎨 Design
+- Interface moderna e intuitiva
+- Cores específicas por modo (vermelho/verde/azul)
+- Animações suaves e transições
+- Cards de estatísticas com gradientes
+- Responsivo para mobile e desktop
+
+---
+
 ## [2.0.0] - 2026-01-02
 
 ### ✨ Adicionado

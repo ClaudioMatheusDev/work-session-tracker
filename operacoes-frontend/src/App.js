@@ -6,7 +6,8 @@ import {
   SessionList, 
   SessionSearch 
 } from "./components/Session";
-import { ErrorMessage, Loading } from "./components/UI";
+import { ErrorMessage, Loading, Button } from "./components/UI";
+import PomodoroPage from "./pages/PomodoroPage";
 import "./App.css";
 
 export default function App() {
@@ -25,6 +26,7 @@ export default function App() {
   } = useOperacoesContext();
 
   const [searchResult, setSearchResult] = useState(null);
+  const [currentPage, setCurrentPage] = useState('operacoes'); // 'operacoes' ou 'pomodoro'
 
   // Handler para criar operação
   const handleCriarOperacao = async (dados) => {
@@ -66,44 +68,67 @@ export default function App() {
   return (
     <div className="app-container">
       <header className="app-header">
-        <h1 className="app-title">Sistema de Operações</h1>
-        <p className="app-subtitle">Gerencie suas sessões de trabalho</p>
+        <h1 className="app-title">Work Session Tracker</h1>
+        <p className="app-subtitle">Gerencie suas sessões de trabalho e produtividade</p>
+        
+        <nav className="app-nav">
+          <Button
+            variant={currentPage === 'operacoes' ? 'primary' : 'secondary'}
+            onClick={() => setCurrentPage('operacoes')}
+            className="nav-btn"
+          >
+            📋 Operações
+          </Button>
+          <Button
+            variant={currentPage === 'pomodoro' ? 'primary' : 'secondary'}
+            onClick={() => setCurrentPage('pomodoro')}
+            className="nav-btn"
+          >
+            🍅 Pomodoro
+          </Button>
+        </nav>
       </header>
 
       <main className="app-main">
-        <ConnectionStatus 
-          status={connectionStatus}
-          onTest={testarConexao}
-          loading={loading}
-        />
+        {currentPage === 'pomodoro' ? (
+          <PomodoroPage />
+        ) : (
+          <>
+            <ConnectionStatus 
+              status={connectionStatus}
+              onTest={testarConexao}
+              loading={loading}
+            />
 
-        {error && (
-          <ErrorMessage 
-            message={error} 
-            onClose={limparErro}
-          />
+            {error && (
+              <ErrorMessage 
+                message={error} 
+                onClose={limparErro}
+              />
+            )}
+
+            {loading && <Loading message="Processando..." />}
+
+            <SessionSearch 
+              onSearch={handleBuscarPorId}
+              loading={loading}
+              result={searchResult}
+            />
+
+            <SessionForm 
+              onSubmit={handleCriarOperacao}
+              loading={loading}
+            />
+
+                <SessionList 
+              operacoes={operacoes}
+              onUpdate={handleAtualizarOperacao}
+              onDelete={handleExcluirOperacao}
+              onRefresh={carregarOperacoes}
+              loading={loading}
+            />
+          </>
         )}
-
-        {loading && <Loading message="Processando..." />}
-
-        <SessionSearch 
-          onSearch={handleBuscarPorId}
-          loading={loading}
-          result={searchResult}
-        />
-
-        <SessionForm 
-          onSubmit={handleCriarOperacao}
-          loading={loading}
-        />
-
-        <SessionList 
-          operacoes={operacoes}
-          onUpdate={handleAtualizarOperacao}
-          onDelete={handleExcluirOperacao}
-          onRefresh={carregarOperacoes}
-          loading={loading}
-        />
       </main>
 
       <footer className="app-footer">

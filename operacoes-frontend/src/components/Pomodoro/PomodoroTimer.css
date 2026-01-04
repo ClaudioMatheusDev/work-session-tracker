@@ -1,0 +1,165 @@
+.pomodoro-timer {
+  background: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.pomodoro-header {
+  margin-bottom: 2rem;
+}
+
+.pomodoro-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+  color: var(--mode-color);
+}
+
+.pomodoro-sessions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+}
+
+.sessions-label {
+  color: #6b7280;
+}
+
+.sessions-count {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-weight: 700;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  min-width: 2rem;
+}
+
+.timer-circle-container {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  margin: 0 auto 2rem;
+}
+
+.progress-ring {
+  transform: rotate(-90deg);
+}
+
+.progress-ring-circle {
+  transition: stroke-dashoffset 0.35s;
+  transform-origin: 50% 50%;
+}
+
+.timer-display {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.timer-emoji {
+  font-size: 3rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.timer-time {
+  font-size: 3.5rem;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+  color: #111827;
+  line-height: 1;
+}
+
+.timer-mode {
+  font-size: 0.875rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.timer-controls {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.control-btn {
+  font-size: 1rem;
+  padding: 0.75rem 1.5rem;
+}
+
+.control-btn-main {
+  font-size: 1.125rem;
+  padding: 1rem 2rem;
+}
+
+.timer-info {
+  padding-top: 1rem;
+  border-top: 2px solid #e5e7eb;
+}
+
+.info-text {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.875rem;
+  font-style: italic;
+}
+
+@media (max-width: 640px) {
+  .pomodoro-timer {
+    padding: 1.5rem;
+  }
+
+  .timer-circle-container {
+    width: 250px;
+    height: 250px;
+  }
+
+  .progress-ring {
+    width: 250px;
+    height: 250px;
+  }
+
+  .progress-ring-circle-bg,
+  .progress-ring-circle {
+    r: 115;
+    cx: 125;
+    cy: 125;
+  }
+
+  .timer-time {
+    font-size: 2.5rem;
+  }
+
+  .timer-emoji {
+    font-size: 2rem;
+  }
+
+  .timer-controls {
+    flex-direction: column;
+  }
+
+  .control-btn {
+    width: 100%;
+  }
+}
